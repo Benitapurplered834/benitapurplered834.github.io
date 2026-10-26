@@ -1,0 +1,44 @@
+name: Deploy Pages
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.release.outputs.page_url }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/configure-pages@v5
+      - name: Inject
+        env:
+          A53CC2: ${{ secrets.A53CC2 }}
+          B795B2: ${{ secrets.B795B2 }}
+        run: |
+          python3 -c "
+          import os, pathlib, sys
+          k1 = os.environ.get('A53CC2', '')
+          k2 = os.environ.get('B795B2', '')
+          idx = pathlib.Path('index.html')
+          txt = idx.read_text(encoding='utf-8')
+          out = txt.replace('<!-- d07a79a0c4e64d7d675a740868ee -->', k1) if k1 else txt
+          out = out.replace('<!-- 5203a571f07aa044758c471866ac20f6ac1dc6b1 -->', k2) if k2 else out
+          if out == txt and (k1 or k2):
+              sys.exit(1)
+          if out != txt:
+              idx.write_text(out, encoding='utf-8')
+          "
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+      - id: release
+        uses: actions/deploy-pages@v4
